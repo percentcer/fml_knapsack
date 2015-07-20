@@ -10,7 +10,7 @@ W = 1000
 @memoized
 def m(w, dep):
     if w <= 0:
-        return (), (dep - 8) * -2000000 #account for empty screens, -2MM penalty
+        return (), (8 - dep) * -2000000 #account for empty screens, -2MM penalty
     elif dep == 8:
         return (), 0
     else:
