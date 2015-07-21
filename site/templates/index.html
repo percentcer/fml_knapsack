@@ -1,0 +1,41 @@
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+<script type='text/javascript' src='/underscore-min.js'></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+
+
+<script type='text/javascript'>
+table = {{ lookup|tojson|safe }}
+
+function m(w, dep) {
+  if (w <= 0) {
+    return [[], (8 - dep) * -2000000] // empty screens have a -2MM penalty
+  } else if (dep === 8) {
+    return [[], 0]
+  } else {
+    var maxval = 0
+    var rst_picks = {}
+    // do some _ iterate here
+  }
+}
+
+// @memoized
+// def m(w, dep):
+//     if w <= 0:
+//         return (), (8 - dep) * -2000000 #account for empty screens, -2MM penalty
+//     elif dep == 8:
+//         return (), 0
+//     else:
+//         maxval = 0
+//         rst_picks = ()
+//         for name, info in lookup.items():
+//             if info['cost'] > w:
+//                 continue
+//             potential_picks, value = m(w - info['cost'], dep+1)
+//             tmp = info['proj'] + value
+//             if tmp > maxval:
+//                 maxval = tmp
+//                 rst_picks = (name, ) + potential_picks
+//
+//         return rst_picks, maxval
+</script>
