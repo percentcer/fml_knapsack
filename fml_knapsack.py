@@ -5,7 +5,6 @@ from retrieval import projections_table
 
 # knapsack W is total weight
 lookup = projections_table()
-W = 1000
 
 @memoized
 def m(w, dep):
@@ -27,9 +26,11 @@ def m(w, dep):
 
         return rst_picks, maxval
 
-picks, value = m(W, 0)
-
-for p in picks: print(p)
-print('-' * 14)
-print("cost: ${}".format(sum(lookup[v]['cost'] for v in picks)))
-print("earn: ${}MM".format(value/1000000))
+if __name__ == '__main__':
+    # max spending money is $1000 (m[W])
+    picks, value = m(1000, 0)
+    for p in picks:
+        print(p)
+    print('-' * 14)
+    print("cost: ${}".format(sum(lookup[v]['cost'] for v in picks)))
+    print("earn: ${}MM".format(value/1000000))
