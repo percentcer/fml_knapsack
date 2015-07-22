@@ -1,0 +1,72 @@
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+<script type='text/javascript' src='/static/underscore-min.js'></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script type='text/javascript'>
+table = {{ lookup|tojson|safe }}
+
+function m(w, dep) {
+    if (w <= 0) {
+        return [[], (8 - dep) * -2000000]; // empty screens have a -2MM penalty
+    } else if (dep === 8) {
+        return [[], 0];
+    } else {
+        var maxval = 0;
+        var rst_picks = [];
+        _.each(table, function(value, key, list){
+            if ( value['cost'] > w ) {
+                return;
+            }
+            var rst = calculate(w - value['cost'], dep+1);
+            var picks = rst[0];
+            var pick_value = rst[1];
+            var tmp = value['proj'] + pick_value;
+            if (tmp > maxval) {
+                maxval = tmp;
+                rst_picks = ([key]).concat(picks);
+            }
+        });
+        return [rst_picks, maxval];
+    }
+}
+
+var calculate = _.memoize(m, function(w, d){
+    return [w, d].join(':');
+});
+
+$(function() {
+    $("#testbutton")
+    .button({icons: {primary: "ui-icon-heart"}})})
+    .click(function(){
+        $("#output").text(calculate(1000, 0));
+    });
+
+// @memoized
+// def m(w, dep):
+//     if w <= 0:
+//         return (), (8 - dep) * -2000000 #account for empty screens, -2MM penalty
+//     elif dep == 8:
+//         return (), 0
+//     else:
+//         maxval = 0
+//         rst_picks = ()
+//         for name, info in lookup.items():
+//             if info['cost'] > w:
+//                 continue
+//             potential_picks, value = m(w - info['cost'], dep+1)
+//             tmp = info['proj'] + value
+//             if tmp > maxval:
+//                 maxval = tmp
+//                 rst_picks = (name, ) + potential_picks
+//
+//         return rst_picks, maxval
+
+</script>
+
+<p>Hello</p>
+
+<pre>{{ lookup|tojson|safe }}</pre>
+
+<button id="testbutton">Pick!</button>
+
+<pre id="output"></pre>
