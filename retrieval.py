@@ -6,8 +6,9 @@ import re
 PBO_DAILY_URL = "http://pro.boxoffice.com/statistics/bo_numbers/early_estimate/{}".format(date.today().isoformat())
 FML_URL = "http://fantasymovieleague.com/researchvault?section=bux"
 
-def _getRows(url):
-    print ("fetching {}".format(url))
+
+def _get_rows(url):
+    print("fetching {}".format(url))
     resp = requests.get(url)
     resp.raise_for_status()
     doc = resp.text
@@ -15,21 +16,24 @@ def _getRows(url):
     tables = soup.find_all('tbody')
     return [[d.text for d in list(r)] for t in tables for r in t.find_all('tr')]
 
+
 def _fml2table(lookup):
-    for rank, title, cost, *_ in _getRows(FML_URL):
+    for rank, title, cost, *_ in _get_rows(FML_URL):
         title = title.strip().split('FB$')[0].upper()
         lookup[title] = {'cost': int(cost), 'proj': None}
+
 
 def _pbo2table(lookup):
     # for removing pbo's date stuff
     date_paren_pat = re.compile(r'\s*\(\d+\)$')
 
-    for rank, name, proj, *_ in _getRows(PBO_DAILY_URL):
+    for rank, name, proj, *_ in _get_rows(PBO_DAILY_URL):
         proj = proj.strip('$').replace(',', '')
         name = name.strip().upper()
         name = date_paren_pat.sub('', name)
         if name in lookup:
             lookup[name]['proj'] = int(proj)
+
 
 def projections_table():
     lookup = {}
