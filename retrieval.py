@@ -1,7 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
-from datetime import date
+from datetime import date, timedelta
 import re
+from collections import OrderedDict
+
+# yesterday = date.today() - timedelta(1)
 
 PBO_DAILY_URL = "http://pro.boxoffice.com/statistics/bo_numbers/early_estimate/{}".format(date.today().isoformat())
 FML_URL = "http://fantasymovieleague.com/researchvault?section=bux"
@@ -14,20 +17,20 @@ def _get_rows(url):
     doc = resp.text
     soup = BeautifulSoup(doc, 'html.parser')
     tables = soup.find_all('tbody')
-    return [[d.text for d in list(r)] for t in tables for r in t.find_all('tr')]
+    return [[r.find('img')] + [d.text for d in list(r)] for t in tables for r in t.find_all('tr')]
 
 
 def _fml2table(lookup):
-    for rank, title, cost, *_ in _get_rows(FML_URL):
+    for img, rank, title, cost, *_ in _get_rows(FML_URL):
         title = title.strip().split('FB$')[0].upper()
-        lookup[title] = {'cost': int(cost), 'proj': None}
+        lookup[title] = {'cost': int(cost), 'proj': None, 'poster': img.attrs['src'] if img else None}
 
 
 def _pbo2table(lookup):
     # for removing pbo's date stuff
     date_paren_pat = re.compile(r'\s*\(\d+\)$')
 
-    for rank, name, proj, *_ in _get_rows(PBO_DAILY_URL):
+    for _, rank, name, proj, *_ in _get_rows(PBO_DAILY_URL):
         proj = proj.strip('$').replace(',', '')
         name = name.strip().upper()
         name = date_paren_pat.sub('', name)
@@ -36,13 +39,13 @@ def _pbo2table(lookup):
 
 
 def projections_table():
-    lookup = {}
+    lookup = OrderedDict()
     _fml2table(lookup)
     _pbo2table(lookup)
 
     for k, v in lookup.items():
         if v['proj'] is None:
             print("warning: {} has no projection".format(k))
-            lookup[k]['proj'] = 300000
+            lookup[k]['proj'] = 100000
 
     return lookup
