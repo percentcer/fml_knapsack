@@ -7,99 +7,112 @@
 table = {{ lookup|tojson|safe }}
 
 function m(w, dep) {
-    if (w <= 0) {
-        return [[], (8 - dep) * -2000000]; // empty screens have a -2MM penalty
-    } else if (dep === 8) {
-        return [[], 0];
-    } else {
-        var maxval = 0;
-        var rst_picks = [];
-        _.each(table, function(value, key, list){
-            if ( value['cost'] > w ) {
-                return;
-            }
-            var rst = calculate(w - value['cost'], dep+1);
-            var picks = rst[0];
-            var pick_value = rst[1];
-            var tmp = value['proj'] + pick_value;
-            if (tmp > maxval) {
-                maxval = tmp;
-                rst_picks = ([key]).concat(picks);
-            }
-        });
-        return [rst_picks, maxval];
-    }
+  if (w <= 0) {
+    return [[], (8 - dep) * -2000000]; // empty screens have a -2MM penalty
+  } else if (dep === 8) {
+    return [[], 0];
+  } else {
+    var maxval = 0;
+    var rst_picks = [];
+    _.each(table, function(value, key, list){
+      if ( value['cost'] > w ) {
+        return;
+      }
+      var rst = calculate(w - value['cost'], dep+1);
+      var picks = rst[0];
+      var pick_value = rst[1];
+      var tmp = value['proj'] + pick_value;
+      if (tmp > maxval) {
+        maxval = tmp;
+        rst_picks = ([key]).concat(picks);
+      }
+    });
+    return [rst_picks, maxval];
+  }
 }
 
 var calculate = _.memoize(m, function(w, d){
-    return [w, d].join(':');
+  return [w, d].join(':');
 });
 
 function recalculate() {
-    $("#selections-top").empty();
-    $("#selections-bottom").empty();
+  $("#selections-top").empty();
+  $("#selections-bottom").empty();
 
-    calculate.cache = {};
+  calculate.cache = {};
 
-    var rst = calculate(1000, 0);
+  var rst = calculate(1000, 0);
 
-    _.each(rst[0], function(el, i, list) {
-        $( i < 4 ? "#selections-top" : "#selections-bottom").append("<img src=" + table[el]['poster'] + " />");
-    });
+  _.each(rst[0], function(el, i, list) {
+    $( i < 4 ? "#selections-top" : "#selections-bottom").append("<img src=" + table[el]['poster'] + " />");
+  });
 
-    $("#value").text(numeral(rst[1]).format('($ 0.00 a)'));
+  $("#value").text(numeral(rst[1]).format('($ 0.00 a)'));
 }
 
 $(function() {
-    recalculate();
+  recalculate();
 
-    _.each(table, function(value, key, list) {
-        var _key = key.replace(' ', '_').replace('.', '');
-        $("#" + _key + "-slider").slider({
-            orientation: "vertical",
-            range: "min",
-            min: value['proj'] * 0.5,
-            max: value['proj'] * 1.5,
-            value: value['proj'],
-            slide: function( event, ui) {
-                $("#" + _key + "-amount").val( numeral(ui.value).format('($ 0.00 a)') );
-            },
-            stop: function( event, ui) {
-                value['proj'] = ui.value;
-                recalculate();
-            }
-        });
-        $( "#" + _key + "-amount" ).val( numeral($("#" + _key + "-slider").slider("value")).format('($ 0.00 a)') );
+  _.each(table, function(value, key, list) {
+    var _key = value.id;
+    $("#" + _key + "-slider").slider({
+      orientation: "vertical",
+      range: "min",
+      min: value['proj'] * 0.5,
+      max: value['proj'] * 1.5,
+      value: value['proj'],
+      slide: function( event, ui) {
+        $("#" + _key + "-amount").val( numeral(ui.value).format('($ 0.00 a)') );
+      },
+      stop: function( event, ui) {
+        value['proj'] = ui.value;
+        recalculate();
+      }
     });
+    $( "#" + _key + "-amount" )
+    .val( numeral($("#" + _key + "-slider").slider("value")).format('($ 0.00 a)') )
+    .keypress(function (e) {
+      if (e.which == 13) {
+        var newv = +$(e.target).val();
+        list[key]['proj'] = newv;
+        $(e.target).val(numeral(list[key]['proj']).format('($ 0.00 a)'));
+        $("#" + _key + "-slider")
+        .slider("option", "value", newv)
+        .slider("option", "min", newv * 0.5)
+        .slider("option", "max", newv * 1.5);
+        recalculate();
+      }
+    });
+  });
 });
 </script>
 
 <style>
-    .slidergroup {
-    display: table-cell;
-    }
+.slidergroup {
+  display: table-cell;
+}
 
-    #selections{
-    margin:auto;
-    }
+#selections {
+  margin:auto;
+}
 </style>
 
-<div id="the-lab">
-    {% for item in lookup %}
-    <div id="{{ item|replace(' ', '_') }}-lab" class="slidergroup">
-        <div id="{{ item|replace(' ', '_') }}-slider"></div>
-        <img src="{{ lookup[item]['poster'] }}">
-        <p>
-            <label for="{{ item|replace(' ', '_') }}-amount">Projection: </label>
-            <input type="text" id="{{ item|replace(' ', '_') }}-amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
-        </p>
-    </div>
-    {% endfor %}
+<div id="lab">
+  {% for item in lookup %}
+  <div id="{{ lookup[item].id }}-group" class="slidergroup">
+    <div id="{{ lookup[item].id }}-slider"></div>
+    <img id="{{ lookup[item].id }}-poster" src="{{ lookup[item]['poster'] }}">
+    <p>
+      <label for="{{ lookup[item].id }}-amount">Projection: </label>
+      <input type="text" id="{{ lookup[item].id }}-amount" style="border:0; color:#f6931f; font-weight:bold;">
+    </p>
+  </div>
+  {% endfor %}
 </div>
 
 <div id="selections">
-    <div id="selections-top"></div>
-    <div id="selections-bottom"></div>
+  <div id="selections-top"></div>
+  <div id="selections-bottom"></div>
 </div>
 
 <h1 id="value"></h1>
