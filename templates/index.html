@@ -78,7 +78,7 @@ $(function() {
     .val( numeral($("#" + _key + "-slider").slider("value")).format('($ 0.00 a)') )
     .keypress(function (e) {
       if (e.which == 13) {
-        var newv = +$(e.target).val();
+        var newv = numeral().unformat($(e.target).val());
         list[key]['proj'] = newv;
         $(e.target).val(numeral(list[key]['proj']).format('($ 0.00 a)'));
         $("#" + _key + "-slider")
