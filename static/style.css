@@ -1,0 +1,51 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  margin: 5em;
+  padding-bottom: 3em;
+}
+
+.slidergroup {
+  flex: 1;
+}
+
+#grid {
+  display:flex;
+}
+
+#lab {
+  display:flex;
+  flex-wrap: wrap;
+}
+
+.movie-poster {
+  background-repeat: no-repeat;
+  height: 16em;
+}
+
+.movie-chiclet {
+  background-position: top;
+  background-repeat: no-repeat;
+  height:8em;
+}
+
+.no-selection {
+  height: 16em;
+  background-color: #ffdddd;
+  border: 1px #000000;
+}
+
+.grid-cell {
+  flex: 1;
+}
+
+.grid--gutters {
+  margin: -1em 0 0 -1em;
+}
+
+.grid--gutters > .grid-cell {
+  padding: 1em 0 0 1em;
+}

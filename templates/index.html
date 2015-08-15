@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+<link rel="stylesheet" href="/static/style.css">
 <script type='text/javascript' src='/static/underscore-min.js'></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
@@ -36,16 +37,20 @@ var calculate = _.memoize(m, function(w, d){
 });
 
 function recalculate() {
-  $("#selections-top").empty();
-  $("#selections-bottom").empty();
+  $("#grid").empty();
 
   calculate.cache = {};
 
   var rst = calculate(1000, 0);
 
   _.each(rst[0], function(el, i, list) {
-    $( i < 4 ? "#selections-top" : "#selections-bottom").append("<img src=" + table[el]['poster'] + " />");
+    $("#grid").append("<div style='background-image:url(\""
+      + table[el]['poster'] + "\")' class='grid-cell movie-poster'></div>");
   });
+
+  for (var i = rst[0].length; i < 8; i++) {
+    $("#grid").append("<div class='grid-cell no-selection'><h1>-$2m</h1></div>")
+  }
 
   $("#value").text(numeral(rst[1]).format('($ 0.00 a)'));
 }
@@ -56,7 +61,7 @@ $(function() {
   _.each(table, function(value, key, list) {
     var _key = value.id;
     $("#" + _key + "-slider").slider({
-      orientation: "vertical",
+      orientation: "horizontal",
       range: "min",
       min: value['proj'] * 0.5,
       max: value['proj'] * 1.5,
@@ -87,21 +92,11 @@ $(function() {
 });
 </script>
 
-<style>
-.slidergroup {
-  display: table-cell;
-}
-
-#selections {
-  margin:auto;
-}
-</style>
-
 <div id="lab">
   {% for item in lookup %}
   <div id="{{ lookup[item].id }}-group" class="slidergroup">
+    <div id="{{ lookup[item].id }}-poster" style="background-image:url('{{ lookup[item]['poster'] }}')" class="movie-chiclet"></div>
     <div id="{{ lookup[item].id }}-slider"></div>
-    <img id="{{ lookup[item].id }}-poster" src="{{ lookup[item]['poster'] }}">
     <p>
       <label for="{{ lookup[item].id }}-amount">Projection: </label>
       <input type="text" id="{{ lookup[item].id }}-amount" style="border:0; color:#f6931f; font-weight:bold;">
@@ -110,9 +105,7 @@ $(function() {
   {% endfor %}
 </div>
 
-<div id="selections">
-  <div id="selections-top"></div>
-  <div id="selections-bottom"></div>
+<div id="grid">
 </div>
 
 <h1 id="value"></h1>
