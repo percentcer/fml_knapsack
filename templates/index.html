@@ -22,7 +22,7 @@ function m(w, dep) {
       var rst = calculate(w - value['cost'], dep+1);
       var picks = rst[0];
       var pick_value = rst[1];
-      var tmp = value['proj'] + pick_value;
+      var tmp = value['proj'] + value['bonus'] + pick_value;
       if (tmp > maxval) {
         maxval = tmp;
         rst_picks = ([key]).concat(picks);
@@ -40,6 +40,15 @@ function recalculate() {
   $("#grid").empty();
 
   calculate.cache = {};
+
+  // assign bonuses (best earnings/cost ratio each week gets a $2MM bonus)
+  best = ['', 0];
+  _.each(table, function(value, key, list) {
+    table[key]['bonus'] = 0;
+    var ratio = value['proj'] / value['cost'];
+    if (ratio > best[1]) { best = [key, ratio]; }
+  });
+  table[best[0]]['bonus'] = 2000000;
 
   var rst = calculate(1000, 0);
 
