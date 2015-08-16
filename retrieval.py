@@ -1,15 +1,12 @@
 import requests
-import re
 import uuid
 
 from bs4 import BeautifulSoup
-from datetime import date, timedelta
 from collections import OrderedDict
 
-yesterday = date.today() - timedelta(1)
+FML_URL = "http://fantasymovieleague.com/researchvault?section=box-office"
 
-PBO_DAILY_URL = "http://pro.boxoffice.com/statistics/long_term_predictions?w=1"
-FML_URL = "http://fantasymovieleague.com/researchvault?section=bux"
+DOLLAR_MAGNITUDES = {"B": 1e9, "M": 1e6, "K": 1e3}
 
 def _get_rows(url):
     print("fetching {}".format(url))
@@ -22,35 +19,30 @@ def _get_rows(url):
 
 
 def _fml2table(lookup):
-    for img, rank, title, cost, *_ in _get_rows(FML_URL):
-        title = title.strip().split('FB$')[0].upper()
+    for img, rank, title, estimate, _, prev, *_ in _get_rows(FML_URL):
+        title, cost = title.strip().split('FB$')
+        estimate = None if estimate == '-' else float(estimate[1:-1]) * DOLLAR_MAGNITUDES[estimate[-1]]
+        prev = None if prev == '-' else float(prev[1:-1]) * DOLLAR_MAGNITUDES[prev[-1]]
+        title = title.upper()
+
         lookup[title] = {
             'cost': int(cost),
-            'proj': None,
+            'proj': estimate,
+            'prev': prev,
             'poster': img.attrs['src'] if img else None,
             'id': str(uuid.uuid4())[:8]} # todo: title conflicts
-
-
-def _pbo2table(lookup):
-    # for removing pbo's date stuff
-    date_paren_pat = re.compile(r'\s*\(\d+\)$')
-
-    for _, name, proj, *_ in _get_rows(PBO_DAILY_URL):
-        proj = proj.strip('$').replace(',', '')
-        name = name.strip().upper()
-        name = date_paren_pat.sub('', name)
-        if name in lookup:
-            lookup[name]['proj'] = int(proj)
 
 
 def projections_table():
     lookup = OrderedDict()
     _fml2table(lookup)
-    _pbo2table(lookup)
 
     for k, v in lookup.items():
         if v['proj'] is None:
-            print("warning: {} has no projection".format(k))
-            lookup[k]['proj'] = 100000
+            if v['prev'] is None:
+                print("warning: {} has no projection".format(k))
+            else:
+                # reduce previous week's value by 40%
+                lookup[k]['proj'] = lookup[k]['prev'] * 0.4
 
     return lookup
