@@ -54,11 +54,11 @@ function recalculate() {
 
   _.each(rst[0], function(el, i, list) {
     $("#grid").append("<div style='background-image:url(\""
-      + table[el]['poster'] + "\")' class='grid-cell movie-poster'></div>");
+      + table[el]['poster'] + "\")' class='cell movie-poster'></div>");
   });
 
   for (var i = rst[0].length; i < 8; i++) {
-    $("#grid").append("<div class='grid-cell no-selection'><h1>-$2m</h1></div>")
+    $("#grid").append("<div class='cell no-selection'><h1>-$2m</h1></div>")
   }
 
   $("#value").text(numeral(rst[1]).format('($ 0.00 a)'));
@@ -103,7 +103,7 @@ $(function() {
 
 <div id="lab">
   {% for item in lookup %}
-  <div id="{{ lookup[item].id }}-group" class="slidergroup">
+  <div id="{{ lookup[item].id }}-group" class="cell">
     <div id="{{ lookup[item].id }}-poster" style="background-image:url('{{ lookup[item]['poster'] }}')" class="movie-chiclet"></div>
     <div id="{{ lookup[item].id }}-slider"></div>
     <p>
